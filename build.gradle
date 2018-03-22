@@ -1,0 +1,36 @@
+group 'us.martinlab'
+version '0.1.1'
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'idea'
+
+jar {
+    baseName 'spring-guava-eventbus'
+    version '0.1.1'
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile 'org.springframework:spring-test:5.0.4.RELEASE'
+    testCompile 'junit:junit:4.12'
+
+    compile 'org.springframework:spring-context:5.0.4.RELEASE'
+    compile 'com.google.guava:guava:18.0'
+    compile 'commons-io:commons-io:2.4'
+    compile 'org.slf4j:slf4j-api:1.7.25'
+    compile 'ch.qos.logback:logback-classic:1.1.11'
+
+    classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.4'
+}
