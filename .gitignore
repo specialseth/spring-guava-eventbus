@@ -86,6 +86,7 @@ buildNumber.properties
 
 ### Other ###
 pom.xml.bak
+local.properties
 
 
 # End of https://www.gitignore.io/api/git,java,maven,intellij
