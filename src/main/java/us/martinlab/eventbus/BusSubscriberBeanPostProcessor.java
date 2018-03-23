@@ -52,7 +52,7 @@ public class BusSubscriberBeanPostProcessor implements DestructionAwareBeanPostP
 	}
 
 	private boolean isEventBusSubscriber(Object bean) {
-		return null == bean.getClass().getAnnotation(EventBusSubscriber.class);
+		return null != bean.getClass().getAnnotation(EventBusSubscriber.class);
 	}
 
 	private boolean hasSubscribingMethod(Object bean) {

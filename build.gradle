@@ -1,19 +1,22 @@
-group 'us.martinlab'
-version '0.1.1'
-
 buildscript {
     repositories {
         mavenCentral()
+        jcenter()
     }
+}
+
+plugins {
+    id "com.jfrog.bintray" version "1.7"
 }
 
 apply plugin: 'java'
 apply plugin: 'idea'
-
+apply plugin: 'com.jfrog.bintray'
+apply plugin: 'maven-publish'
 
 ext {
-    bintrayRepo = 'maven'
-    bintrayName = 'spring-guava-eventbus '
+    bintrayRepo = 'us.martinlab'
+    bintrayName = 'spring-guava-eventbus'
 
     publishedGroupId = 'us.martinlab'
     libraryName = 'spring-guava-eventbus'
@@ -24,7 +27,7 @@ ext {
     siteUrl = 'https://github.com/specialseth/spring-guava-eventbus'
     gitUrl = 'https://github.com/specialseth/spring-guava-eventbus.git'
 
-    libraryVersion = '0.1.1'
+    libraryVersion = '0.1.2'
 
     developerId = 'specialseth'
     developerName = 'Seth Martin'
@@ -35,9 +38,57 @@ ext {
     allLicenses = ["Apache-2.0"]
 }
 
+group publishedGroupId
+version libraryVersion
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives javadocJar
+    archives sourcesJar
+}
+
+// Bintray
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
+bintray {
+    user = properties.getProperty('bintray.user')
+    key = properties.getProperty('bintray.apikey')
+    pkg {
+        repo = bintrayRepo
+        name = bintrayName
+        desc = libraryDescription
+        websiteUrl = siteUrl
+        licenses = allLicenses
+        vcsUrl = gitUrl
+        publish = true
+        publicDownloadNumbers = true
+
+        version {
+            desc = libraryDescription
+            gpg {
+                sign = true //Determines whether to GPG sign the files. The default is false
+                passphrase = properties.getProperty("bintray.gpg.password")
+                //Optional. The passphrase for GPG signing'
+            }
+        }
+    }
+    publications = ['MyPublication']
+    configurations = ['archives']
+}
+
 jar {
-    baseName 'spring-guava-eventbus'
-    version '0.1.1'
+    baseName libraryName
+    version libraryVersion
 }
 
 sourceCompatibility = 1.8
@@ -56,9 +107,50 @@ dependencies {
     compile 'commons-io:commons-io:2.4'
     compile 'org.slf4j:slf4j-api:1.7.25'
     compile 'ch.qos.logback:logback-classic:1.1.11'
-
-    classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.4'
 }
 
-apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/installv1.gradle'
-apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/bintrayv1.gradle'
+// Create the pom configuration:
+def pomConfig = {
+    licenses {
+        license {
+            name licenseName
+            url licenseUrl
+            distribution "repo"
+        }
+    }
+    developers {
+        developer {
+            id developerId
+            name developerId
+            email developerEmail
+        }
+    }
+    
+    scm {
+       url siteUrl
+    }
+}
+
+// Create the publication with the pom configuration:
+publishing {
+    publications {
+        MyPublication(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+            groupId publishedGroupId
+            artifactId artifact
+            version libraryVersion
+            pom.withXml {
+                def root = asNode()
+                root.appendNode('description', libraryDescription)
+                root.appendNode('name', libraryName)
+                root.appendNode('url', siteUrl)
+                root.children().last() + pomConfig
+            }
+        }
+    }
+}
+
+//apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/installv1.gradle'
+//apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/bintrayv1.gradle'

@@ -83,10 +83,14 @@ buildNumber.properties
 
 ### Gradle ###
 .gradle/
+gradlew*
+build/
+gradle/
+
 
 ### Other ###
 pom.xml.bak
 local.properties
-
+build/
 
 # End of https://www.gitignore.io/api/git,java,maven,intellij
