@@ -5,6 +5,8 @@ import com.google.common.eventbus.Subscribe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.config.DestructionAwareBeanPostProcessor;
 
 import java.lang.reflect.Method;
@@ -12,8 +14,10 @@ import java.lang.reflect.Method;
 /**
  * Bean Post Processor that will register {@link EventBusSubscriber}s with the correct EventBus
  */
-public class BusSubscriberBeanPostProcessor implements DestructionAwareBeanPostProcessor {
+public class BusSubscriberBeanPostProcessor implements BeanFactoryAware, DestructionAwareBeanPostProcessor {
 	private static Logger logger = LoggerFactory.getLogger(BusSubscriberBeanPostProcessor.class);
+
+	private BeanFactory beanFactory;
 
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
@@ -30,7 +34,8 @@ public class BusSubscriberBeanPostProcessor implements DestructionAwareBeanPostP
 		if (null == eventBusSubscriberAnnotation || !hasSubscribingMethod(bean)) return bean;
 
 		String module = eventBusSubscriberAnnotation.module();
-		EventBusProvider.get(module).register(bean);
+		EventBusProvider eventBusProvider = beanFactory.getBean(EventBusProvider.class);
+		eventBusProvider.get(module).register(bean);
 		logger.info("Registered {} with EventBus:[{}].", clazz, module);
 
 		return bean;
@@ -46,7 +51,8 @@ public class BusSubscriberBeanPostProcessor implements DestructionAwareBeanPostP
 		if (isEventBusSubscriber(bean)) {
 			EventBusSubscriber annotation = bean.getClass().getAnnotation(EventBusSubscriber.class);
 			String module = annotation.module();
-			EventBus eventBus = EventBusProvider.get(module);
+			EventBusProvider eventBusProvider = beanFactory.getBean(EventBusProvider.class);
+			EventBus eventBus = eventBusProvider.get(module);
 			eventBus.unregister(bean);
 		}
 	}
@@ -78,5 +84,10 @@ public class BusSubscriberBeanPostProcessor implements DestructionAwareBeanPostP
 
 	private boolean isBusSubscriber(Class<?> clazz) {
 		return null != clazz.getAnnotation(EventBusSubscriber.class);
+	}
+
+	@Override
+	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+		this.beanFactory = beanFactory; 
 	}
 }

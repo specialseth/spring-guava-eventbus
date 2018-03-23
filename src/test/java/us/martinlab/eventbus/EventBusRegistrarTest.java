@@ -6,7 +6,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -15,11 +14,13 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
 
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes = { BusSubscriberBeanPostProcessorTest.TestConfiguration.class, EventBusConfiguration.class })
-public class BusSubscriberBeanPostProcessorTest {
+@ContextConfiguration(classes = {EventBusRegistrarTest.RegistrarConfig.class})
+public class EventBusRegistrarTest {
+
+	public final static String TEST_MODULE = "TEST_MODULE";
 
 	@Autowired
-	@Qualifier(TestConfiguration.TEST_MODULE)
+	@Qualifier(TEST_MODULE)
 	EventBus bus;
 
 	@Autowired
@@ -31,22 +32,12 @@ public class BusSubscriberBeanPostProcessorTest {
 		assertThat(sub.getHandledEventsCount(), is(not(0)));
 	}
 
-	@Configuration
-	public static class TestConfiguration {
-
-		public final static String TEST_MODULE = "TEST_MODULE";
-
-		@Bean
-		@Qualifier(TEST_MODULE)
-		public EventBus testEventBus(EventBusProvider provider) {
-			return provider.get(TEST_MODULE);
-		}
+	@EnableGuavaEventBus(modules = {TEST_MODULE, "another_module"})
+	public static class RegistrarConfig {
 
 		@Bean
 		public TestEventSubscriber<String> subscriber() {
 			return new TestEventSubscriber<>();
 		}
-
 	}
-
 }

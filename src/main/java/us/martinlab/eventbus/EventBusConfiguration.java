@@ -1,5 +1,6 @@
 package us.martinlab.eventbus;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -24,5 +25,11 @@ public class EventBusConfiguration {
 	@Bean
 	public BusSubscriberBeanPostProcessor autoSubscribeEventBusListeners() {
 		return new BusSubscriberBeanPostProcessor();
+	}
+
+	@Bean
+	@Qualifier("EVENT_BUS_PROVIDER")
+	public EventBusProvider eventBusProvider() {
+		return EventBusProvider.createProvider();
 	}
 }

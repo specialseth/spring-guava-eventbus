@@ -13,14 +13,20 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class EventBusProvider {
 
-	private static final ConcurrentMap<String, EventBus> eventbuses = Maps.newConcurrentMap();
+	private final ConcurrentMap<String, EventBus> eventbuses;
+
+	private EventBusProvider() {
+		eventbuses = Maps.newConcurrentMap();
+	}
+
+	public static EventBusProvider createProvider() { return new EventBusProvider(); }
 
 	/**
 	 * retrieve the event bus for the supplied module. Create a new EventBus if no bus exists for the module
 	 * @param module
 	 * @return
 	 */
-	public static EventBus get(String module) {
+	public EventBus get(String module) {
 		return eventbuses.computeIfAbsent(module, n -> new EventBus());
 	}
 
